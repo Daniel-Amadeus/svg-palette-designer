@@ -29,11 +29,12 @@ export class SvgPaletteDesigner {
 
         for (let i = 0; i < this._colors.length; i++) {
             const color = this._colors[i];
-            const colorInput = controls.createColorInput('color ' + i);
+            const colorInput = controls.createColorInput('color ' + i + ' - ' + color);
             colorInput.value = color;
             colorInput.addEventListener('input', () => {
                 // console.log(colorInput.value);
                 this._colors[i] = colorInput.value;
+                colorInput.labels[0].innerHTML = 'color ' + i + ' - ' + colorInput.value;
                 this.generateCss();
             });
         }
