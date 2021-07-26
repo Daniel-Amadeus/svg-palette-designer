@@ -72,7 +72,7 @@ const config = {
 
 module.exports = (env, argv) => {
     const devMode = argv.mode === 'development';
-    config.output.publicPath = devMode ? '/' : '/image_to_notes/';
+    config.output.publicPath = devMode ? '/' : '/svg-palette-designer/';
     // config.plugins.push(
     //     new FaviconsWebpackPlugin({
     //         logo: './source/img/logo.svg',
