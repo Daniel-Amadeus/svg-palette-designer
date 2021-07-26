@@ -19,6 +19,19 @@ export class SvgPaletteDesigner {
 
         const loadSvgButton = controls.createFileInput(
             'load svg', '.svg', false);
+        loadSvgButton.addEventListener('change', () => {
+            const file = loadSvgButton.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result as string;
+                this.loadSvg(result);
+            }
+            reader.readAsText(file);
+        });
+        loadSvgButton.addEventListener('click', () => {
+            loadSvgButton.value = '';
+        });
 
         const selectedColorInput = controls.createSelectListInput(
             'selected color',
