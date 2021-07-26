@@ -1,25 +1,74 @@
+import { Controls } from "./uiHelper";
 
 export class SvgPaletteDesigner {
 
     protected _svg: string;
+    protected _style: HTMLElement;
+
+    protected _colorCount = 3;
+    protected _colors: string[] = [];
+    protected _selectedColor = 0;
 
     constructor() {
-        // const fileReader = new FileReader();
+        this.initColors();
+        this.initSvg();
 
-        // fileReader.onload = () => {
-        //     console.log('load');
-        //     console.log(fileReader.result);
-        // }
+        
+        const ui = document.getElementById('ui');
+        const controls = new Controls(ui);
 
-        // fileReader.readAsText(this._svg);
+        const selectedColorInput = controls.createSelectListInput(
+            'selected color',
+            this._colors.map((e, i)=>'color ' + i.toString())
+        );
+        selectedColorInput.selectedIndex = this._selectedColor;
+        selectedColorInput.addEventListener('change', () => {
+            this._selectedColor = selectedColorInput.selectedIndex;
+        })
 
-        console.log(this._svg);
 
+        for (let i = 0; i < this._colors.length; i++) {
+            const color = this._colors[i];
+            const colorInput = controls.createColorInput('color ' + i);
+            colorInput.value = color;
+            colorInput.addEventListener('input', () => {
+                // console.log(colorInput.value);
+                this._colors[i] = colorInput.value;
+                this.generateCss();
+            });
+        }
+
+        this._style = document.createElement('style');
+        document.getElementsByTagName('head')[0].appendChild(this._style);
+
+        this.generateCss();
+    }
+
+    initSvg(): void {
         this.loadSvg(require('../svg/example.svg?raw'));
+    }
 
-        const style = document.createElement('style');
-        style.innerHTML = '.magenta{fill: #ff00ff !important}';
-        document.getElementsByTagName('head')[0].appendChild(style);
+    initColors(): void {
+        for (let i = 0; i < this._colorCount; i++) {
+            let color = '#';
+            for (let ci = 0; ci < 3; ci++) {
+                let comp = Math.floor((Math.random() * 256)).toString(16);
+                comp += comp.length < 2 ? '0' : '';
+                color += comp;
+            }
+            this._colors.push(color);
+        }
+    }
+
+    generateCss(): void {
+        let css = '';
+        for (let i = 0; i < this._colors.length; i++) {
+            const color = this._colors[i];
+            css += `.color${i}{fill: ${color} !important} `;
+        }
+
+        // console.log(css);
+        this._style.innerHTML = css;
     }
 
     loadSvg(svg: string): void {
@@ -38,8 +87,16 @@ export class SvgPaletteDesigner {
     addClickListeners(element: Element): void {
         if (element.children.length == 0) {
             element.addEventListener('click', (event) => {
-                console.log(element);
-                element.classList.add('magenta');
+                for (let i = 0; i < this._colors.length; i++) {
+                    const colorName = 'color' + i;
+                    const color = this._colors[i];
+                    if (i == this._selectedColor) {
+                        element.classList.add(colorName);
+                    } else {
+                        element.classList.remove(colorName);
+                    }
+
+                }
             });
             return;
         }
