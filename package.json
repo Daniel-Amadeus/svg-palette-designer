@@ -1,5 +1,5 @@
 {
-  "name": "image_to_notes",
+  "name": "svg-palette-designer",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Daniel-Amadeus/image_to_notes.git"
+    "url": "git+https://github.com/Daniel-Amadeus/svg-palette-designer.git"
   },
   "keywords": [
     "notes",
@@ -19,9 +19,9 @@
   "author": "Daniel-Amadeus Johannes Glöckner",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Daniel-Amadeus/image_to_notes/issues"
+    "url": "https://github.com/Daniel-Amadeus/svg-palette-designer/issues"
   },
-  "homepage": "https://github.com/Daniel-Amadeus/image_to_notes#readme",
+  "homepage": "https://github.com/Daniel-Amadeus/svg-palette-designer#readme",
   "devDependencies": {
     "@popperjs/core": "^2.9.2",
     "@types/uuid": "^8.3.1",
