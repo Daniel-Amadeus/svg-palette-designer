@@ -35,7 +35,7 @@ const config = {
                 type: 'asset/source'
             },
             {
-                test: /\.(jpe?g|png|woff2?|eot|ttf|svg)$/,
+                test: /\.(jpe?g|png|woff2?|eot|ttf)$/,
                 use: [
                     {
                         loader: 'file-loader',
