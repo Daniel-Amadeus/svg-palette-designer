@@ -5,6 +5,8 @@ export class SvgPaletteDesigner {
     protected _svg: string;
     protected _style: HTMLElement;
 
+    protected _fileName: string;
+
     protected _colorCount = 3;
     protected _colors: string[] = [];
     protected _selectedColor = 0;
@@ -22,6 +24,7 @@ export class SvgPaletteDesigner {
         loadSvgButton.addEventListener('change', () => {
             const file = loadSvgButton.files[0];
             if (!file) return;
+            this._fileName = file.name;
             const reader = new FileReader();
             reader.onload = () => {
                 const result = reader.result as string;
@@ -115,7 +118,7 @@ export class SvgPaletteDesigner {
         let element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,'
             + encodeURIComponent(svgString));
-        element.setAttribute('download', 'file.svg');
+        element.setAttribute('download', this._fileName);
 
         element.style.display = 'none';
         document.body.appendChild(element);
