@@ -17,6 +17,9 @@ export class SvgPaletteDesigner {
         const ui = document.getElementById('ui');
         const controls = new Controls(ui);
 
+        const loadSvgButton = controls.createFileInput(
+            'load svg', '.svg', false);
+
         const selectedColorInput = controls.createSelectListInput(
             'selected color',
             this._colors.map((e, i)=>'color ' + i.toString())
@@ -29,7 +32,8 @@ export class SvgPaletteDesigner {
 
         for (let i = 0; i < this._colors.length; i++) {
             const color = this._colors[i];
-            const colorInput = controls.createColorInput('color ' + i + ' - ' + color);
+            const colorInput = controls.createColorInput(
+                'color ' + i + ' - ' + color);
             colorInput.value = color;
             colorInput.addEventListener('input', () => {
                 // console.log(colorInput.value);
