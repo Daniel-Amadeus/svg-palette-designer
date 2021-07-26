@@ -5,7 +5,7 @@ export class SvgPaletteDesigner {
     protected _svg: string;
     protected _style: HTMLElement;
 
-    protected _fileName: string;
+    protected _fileName: string = 'file.svg';
 
     protected _colorCount = 3;
     protected _colors: string[] = [];
@@ -57,7 +57,6 @@ export class SvgPaletteDesigner {
                 'color ' + i + ' - ' + color);
             colorInput.value = color;
             colorInput.addEventListener('input', () => {
-                // console.log(colorInput.value);
                 this._colors[i] = colorInput.value;
                 colorInput.labels[0].innerHTML = 'color ' + i + ' - ' + colorInput.value;
                 this.generateCss();
@@ -93,7 +92,6 @@ export class SvgPaletteDesigner {
             css += `.color${i}{fill: ${color} !important} `;
         }
 
-        // console.log(css);
         this._style.innerHTML = css;
     }
 
@@ -113,7 +111,6 @@ export class SvgPaletteDesigner {
     exportSvg(): void {
         const svgPreview = document.getElementById('svgPreview');
         const svgString = svgPreview.innerHTML;
-        console.log(svgString);
 
         let element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,'
