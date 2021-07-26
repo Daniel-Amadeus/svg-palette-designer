@@ -33,6 +33,11 @@ export class SvgPaletteDesigner {
             loadSvgButton.value = '';
         });
 
+        const saveButton = controls.createActionButton('save svg');
+        saveButton.addEventListener('click', () => {
+            this.exportSvg();
+        });
+
         const selectedColorInput = controls.createSelectListInput(
             'selected color',
             this._colors.map((e, i)=>'color ' + i.toString())
@@ -100,6 +105,24 @@ export class SvgPaletteDesigner {
         svgElement.style.height = '100%';
 
         this.addClickListeners(svgElement);
+    }
+
+    exportSvg(): void {
+        const svgPreview = document.getElementById('svgPreview');
+        const svgString = svgPreview.innerHTML;
+        console.log(svgString);
+
+        let element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,'
+            + encodeURIComponent(svgString));
+        element.setAttribute('download', 'file.svg');
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
     }
 
     addClickListeners(element: Element): void {
