@@ -5,7 +5,6 @@ export class Controls {
     protected _controlsElement: HTMLFormElement;
 
     public constructor(container?: HTMLElement) {
-        console.log(container);
         if (!container) {
             container = document.getElementById('controls-container');
         }
@@ -39,12 +38,16 @@ export class Controls {
 
     protected createLabel(
         label: string,
-        htmlFor: string
+        htmlFor: string,
+        parent?: HTMLElement
     ): HTMLLabelElement {
+        if (!parent) {
+            parent = this._controlsElement;
+        }
         const labelElement = document.createElement('label');
         labelElement.htmlFor = htmlFor;
         labelElement.innerText = label;
-        this._controlsElement.appendChild(labelElement);
+        parent.appendChild(labelElement);
         return labelElement;
     }
 
@@ -100,6 +103,20 @@ export class Controls {
         return buttonElement as HTMLButtonElement;
     }
 
+    createMainElement(
+        type: string,
+        placeholder: string,
+        id: string
+    ): HTMLInputElement {
+        const inputElement = document.createElement('input');
+        inputElement.id = id;
+        inputElement.className = 'form-control';
+        inputElement.type = type;
+        inputElement.placeholder = placeholder;
+        this._controlsElement.appendChild(inputElement);
+        return inputElement;
+    };
+
     public createGenericInput(
         label: string,
         type = 'text',
@@ -107,18 +124,8 @@ export class Controls {
         description?: string,
         id?: string
     ): HTMLInputElement {
-        const createMainElement = (): HTMLInputElement => {
-            const inputElement = document.createElement('input');
-            inputElement.id = id;
-            inputElement.className = 'form-control';
-            inputElement.type = type;
-            inputElement.placeholder = placeholder;
-            this._controlsElement.appendChild(inputElement);
-            return inputElement;
-        };
-
         const inputElement =
-            this.createInput(label, createMainElement, description, id);
+            this.createInput(label, ()=>this.createMainElement(type, placeholder, id), description, id);
 
         return inputElement as HTMLInputElement;
     }
@@ -200,6 +207,47 @@ export class Controls {
             min, max, step, id);
         sliderInput.classList.add('custom-range');
         return sliderInput;
+    }
+
+    public createCheckInput(
+        label: string,
+        placeholder = '',
+        checked = false,
+        description?: string,
+        id?: string
+    ): HTMLInputElement {
+        // const checkInput = this.createGenericInput(
+        //     label, 'checkbox', placeholder, description, id);
+        // checkInput.className = 'form-check';
+        // checkInput.value = value.toString();
+        // checkInput.labels[0].className = 'form-check-label'
+        // return checkInput;
+
+        if (!id) {
+            id = uuid();
+        }
+
+        const checkForm = document.createElement('div');
+        checkForm.className = 'form-check';
+        this._controlsElement.appendChild(checkForm);
+
+        const inputElement = this.createMainElement('checkbox', placeholder, id);
+        inputElement.id = id;
+        inputElement.className = 'form-check-input';
+        inputElement.checked = checked;
+        checkForm.appendChild(inputElement);
+
+        if (label) {
+            const labelElement = this.createLabel(label, id, checkForm);
+            labelElement.className = 'form-check-label';
+        }
+
+        if (description) {
+            const smallElement = this.createDescription(description);
+            inputElement.setAttribute('aria-describedby', smallElement.id);
+        }
+
+        return inputElement;
     }
 
     public createFileInput(

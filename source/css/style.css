@@ -82,7 +82,11 @@ nav .dropdown-divider {
     width: 65%;
 }
 
-label {
+label:not(.form-check-label) {
+    margin-top: 1em;
+}
+
+.form-check {
     margin-top: 1em;
 }
 

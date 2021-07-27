@@ -11,11 +11,20 @@ export class SvgPaletteDesigner {
     protected _colors: string[] = [];
     protected _selectedColor = 0;
 
+    protected _applyColorsOnExport = false;
+
     constructor() {
         this.initColors();
         this.initSvg();
+        this.initControls();
 
-        
+        this._style = document.createElement('style');
+        document.getElementsByTagName('head')[0].appendChild(this._style);
+
+        this.generateCss();
+    }
+
+    initControls(): void {
         const ui = document.getElementById('ui');
         const controls = new Controls(ui);
 
@@ -50,7 +59,6 @@ export class SvgPaletteDesigner {
             this._selectedColor = selectedColorInput.selectedIndex;
         })
 
-
         for (let i = 0; i < this._colors.length; i++) {
             const color = this._colors[i];
             const colorInput = controls.createColorInput(
@@ -63,14 +71,22 @@ export class SvgPaletteDesigner {
             });
         }
 
-        this._style = document.createElement('style');
-        document.getElementsByTagName('head')[0].appendChild(this._style);
+        const applyColorsOnExportInput = controls.createCheckInput(
+            'apply colors on export'
+        );
 
-        this.generateCss();
+        applyColorsOnExportInput.addEventListener('change', () => {
+            this._applyColorsOnExport = applyColorsOnExportInput.checked;
+        })
     }
 
     initSvg(): void {
         this.loadSvg(require('../svg/example.svg?raw'));
+    }
+
+    createColorWheel(ui: HTMLElement): void {
+        const canvas = document.createElement('canvas') as HTMLCanvasElement;
+
     }
 
     initColors(): void {
@@ -110,8 +126,31 @@ export class SvgPaletteDesigner {
 
     exportSvg(): void {
         const svgPreview = document.getElementById('svgPreview');
-        const svgString = svgPreview.innerHTML;
+        let svgString = svgPreview.innerHTML;
 
+        if (this._applyColorsOnExport) {
+            const tmpSvgContainer = document.createElement('div');
+            tmpSvgContainer.innerHTML = svgString;
+            this.navigateElements(
+                tmpSvgContainer.children[0],
+                (element: Element) => {
+                    const classList = element.classList;
+                    if (classList.length <= 0) return;
+                    for (const cls of classList) {
+                        if (!cls.startsWith('color')) continue;
+                        const index = Number.parseInt(cls.substr(5));
+                        const color = this._colors[index];
+                        element.setAttribute('fill', color);
+                        (element as SVGElement).style.fill = color;
+                    }
+                }
+            )
+
+            svgString = tmpSvgContainer.innerHTML;
+        }
+
+
+        // save
         let element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,'
             + encodeURIComponent(svgString));
@@ -125,25 +164,33 @@ export class SvgPaletteDesigner {
         document.body.removeChild(element);
     }
 
-    addClickListeners(element: Element): void {
-        if (element.children.length == 0) {
-            element.addEventListener('click', (event) => {
-                for (let i = 0; i < this._colors.length; i++) {
-                    const colorName = 'color' + i;
-                    const color = this._colors[i];
-                    if (i == this._selectedColor) {
-                        element.classList.add(colorName);
-                    } else {
-                        element.classList.remove(colorName);
-                    }
-
-                }
-            });
-            return;
-        }
-
+    navigateElements(element: Element, f: (element: Element) => void): void {
+        f(element);
         for (const child of element.children) {
-            this.addClickListeners(child);
+            this.navigateElements(child, f);
         }
+    }
+
+    addClickListeners(element: Element): void {
+        this.navigateElements(
+            element,
+            (element: Element) => {
+                if (element.children.length == 0) {
+                    element.addEventListener('click', (event) => {
+                        for (let i = 0; i < this._colors.length; i++) {
+                            const colorName = 'color' + i;
+                            const color = this._colors[i];
+                            if (i == this._selectedColor) {
+                                element.classList.add(colorName);
+                            } else {
+                                element.classList.remove(colorName);
+                            }
+        
+                        }
+                    });
+                    return;
+                }
+            }
+        )
     }
 }
