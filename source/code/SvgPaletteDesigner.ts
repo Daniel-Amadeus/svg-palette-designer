@@ -77,7 +77,9 @@ export class SvgPaletteDesigner {
 
         applyColorsOnExportInput.addEventListener('change', () => {
             this._applyColorsOnExport = applyColorsOnExportInput.checked;
-        })
+        });
+
+        this.createColorWheel(ui);
     }
 
     initSvg(): void {
@@ -86,6 +88,90 @@ export class SvgPaletteDesigner {
 
     createColorWheel(ui: HTMLElement): void {
         const canvas = document.createElement('canvas') as HTMLCanvasElement;
+
+        canvas.width = 100;
+        canvas.height = 100;
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+
+        ui.appendChild(canvas);
+
+        this.drawColorWheel(canvas);
+    }
+
+    HSVtoRGB(
+        h: number, s: number, v: number
+    ): {r: number, g: number, b: number} {
+        var r, g, b, i, f, p, q, t;
+        i = Math.floor(h * 6);
+        f = h * 6 - i;
+        p = v * (1 - s);
+        q = v * (1 - f * s);
+        t = v * (1 - (1 - f) * s);
+        switch (i % 6) {
+            case 0: r = v, g = t, b = p; break;
+            case 1: r = q, g = v, b = p; break;
+            case 2: r = p, g = v, b = t; break;
+            case 3: r = p, g = q, b = v; break;
+            case 4: r = t, g = p, b = v; break;
+            case 5: r = v, g = p, b = q; break;
+        }
+        return {
+            r: Math.round(r * 255),
+            g: Math.round(g * 255),
+            b: Math.round(b * 255)
+        };
+    }
+
+    getColorWheelPixel(
+        x: number,
+        y: number,
+        r: number,
+    ): {r: number, g: number, b: number} {
+        const d2 = Math.pow(r - x, 2) + Math.pow(r - y, 2);
+        const r2 = Math.pow(r, 2);
+
+        if (r2 < d2) {
+            return {r: 255, g: 255, b: 255};
+        }
+
+        const h = Math.atan2(y - r, x - r) / (Math.PI * 2) + 0.5;
+        const s = d2 / r2;
+        return this.HSVtoRGB(h, s, 1);
+    }
+
+    drawColorWheel(canvas: HTMLCanvasElement): void {
+        const context = canvas.getContext('2d');
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        canvas.width = width;
+        canvas.height = height;
+
+        const diameter = width;
+        const radius = diameter / 2;
+
+        const r2 = Math.pow(radius, 2);
+
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, width, height);
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+
+                const {r, g, b} = this.getColorWheelPixel(
+                    x, y, radius
+                )
+                let rString = r.toString(16);
+                rString = (rString.length < 2 ? '0' : '') + rString;
+                let gString = g.toString(16);
+                gString = (gString.length < 2 ? '0' : '') + gString;
+                let bString = b.toString(16);
+                bString = (bString.length < 2 ? '0' : '') + bString;
+                // console.log(rString);
+                context.fillStyle = '#' + rString + gString + bString;
+                context.fillRect(x, y, 1, 1);
+            }
+        }
 
     }
 
