@@ -8,10 +8,12 @@ export class SvgPaletteDesigner {
     protected _fileName: string = 'file.svg';
 
     protected _colorCount = 3;
-    protected _colors: string[] = [];
+    protected _colors: number[][] = [];
     protected _selectedColor = 0;
 
     protected _applyColorsOnExport = false;
+
+    protected _colorWheel: HTMLElement;
 
     constructor() {
         this.initColors();
@@ -22,6 +24,25 @@ export class SvgPaletteDesigner {
         document.getElementsByTagName('head')[0].appendChild(this._style);
 
         this.generateCss();
+    }
+
+    colorToString(color: number[]): string {
+        let out = '#';
+        for(let i = 0; i < 3; i++) {
+            let comp = Math.floor(color[i] * 255).toString(16);
+            comp = (comp.length < 2 ? '0' : '') + comp;
+            out += comp;
+        }
+        return out;
+    }
+
+    stringToColor(colorString: string): number[] {
+        let color = [];
+        for (let i = 0; i < 3; i++) {
+            const str = colorString.substr(i * 2 + 1, 2);
+            color.push(Number.parseInt(str, 16) / 255.0);
+        }
+        return color;
     }
 
     initControls(): void {
@@ -60,14 +81,15 @@ export class SvgPaletteDesigner {
         })
 
         for (let i = 0; i < this._colors.length; i++) {
-            const color = this._colors[i];
+            const color = this.colorToString(this._colors[i]);
             const colorInput = controls.createColorInput(
                 'color ' + i + ' - ' + color);
             colorInput.value = color;
             colorInput.addEventListener('input', () => {
-                this._colors[i] = colorInput.value;
+                this._colors[i] = this.stringToColor(colorInput.value);
                 colorInput.labels[0].innerHTML = 'color ' + i + ' - ' + colorInput.value;
                 this.generateCss();
+                this.updateColorWheel();
             });
         }
 
@@ -87,16 +109,58 @@ export class SvgPaletteDesigner {
     }
 
     createColorWheel(ui: HTMLElement): void {
+        const container = document.createElement('div');
         const canvas = document.createElement('canvas') as HTMLCanvasElement;
+
+        this._colorWheel = container;
+
+        container.classList.add('colorWheel');
+        window.addEventListener('resize', () => {
+            this.drawColorWheel(canvas);
+            this.updateColorWheel();
+        });
 
         canvas.width = 100;
         canvas.height = 100;
-        canvas.style.width = '100%';
-        canvas.style.height = 'auto';
 
-        ui.appendChild(canvas);
+        ui.appendChild(container);
+        container.appendChild(canvas);
+
+        for (let i = 0; i < this._colors.length; i++) {
+            const circle = document.createElement('div');
+            container.appendChild(circle);
+
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+
+            circle.style.left = (x - (circle.clientWidth / 2)) + 'px';
+            circle.style.top = (y - (circle.clientHeight / 2)) + 'px';
+        }
 
         this.drawColorWheel(canvas);
+        this.updateColorWheel();
+    }
+
+    updateColorWheel(): void {
+        const circles = this._colorWheel.getElementsByTagName('div');
+        const canvas = this._colorWheel.getElementsByTagName('canvas')[0];
+        for (let i = 0; i < circles.length; i++) {
+            const circle = circles[i];
+            const color = this._colors[i];
+            const {h, s, v} = this.RGBtoHSV(color);
+
+            const width2 = canvas.width * 0.5;
+            const angle = h * Math.PI * 2 + Math.PI;
+            const distance = s * width2;
+
+            const x = distance * Math.cos(angle) + width2;
+            const y = distance * Math.sin(angle) + width2;
+
+            circle.style.left = (x - (circle.clientWidth / 2)) + 'px';
+            circle.style.top = (y - (circle.clientHeight / 2)) + 'px';
+
+            circle.style.backgroundColor = this.colorToString(color);
+        }
     }
 
     HSVtoRGB(
@@ -120,6 +184,30 @@ export class SvgPaletteDesigner {
             r: Math.round(r * 255),
             g: Math.round(g * 255),
             b: Math.round(b * 255)
+        };
+    }
+
+    RGBtoHSV(rgb: number[]) {
+        const r = rgb[0];
+        const g = rgb[1];
+        const b = rgb[2];
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let d = max - min;
+        let h;
+        let s = (max === 0 ? 0 : d / max);
+        let v = max / 255;
+    
+        switch (max) {
+            case min: h = 0; break;
+            case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
+            case g: h = (b - r) + d * 2; h /= 6 * d; break;
+            case b: h = (r - g) + d * 4; h /= 6 * d; break;
+        }
+    
+        return {
+            h: h,
+            s: s,
+            v: v
         };
     }
 
@@ -177,11 +265,9 @@ export class SvgPaletteDesigner {
 
     initColors(): void {
         for (let i = 0; i < this._colorCount; i++) {
-            let color = '#';
+            let color: number[] = [];
             for (let ci = 0; ci < 3; ci++) {
-                let comp = Math.floor((Math.random() * 256)).toString(16);
-                comp += comp.length < 2 ? '0' : '';
-                color += comp;
+                color[ci] = Math.random();
             }
             this._colors.push(color);
         }
@@ -190,7 +276,7 @@ export class SvgPaletteDesigner {
     generateCss(): void {
         let css = '';
         for (let i = 0; i < this._colors.length; i++) {
-            const color = this._colors[i];
+            const color = this.colorToString(this._colors[i]);
             css += `.color${i}{fill: ${color} !important} `;
         }
 
@@ -225,7 +311,7 @@ export class SvgPaletteDesigner {
                     for (const cls of classList) {
                         if (!cls.startsWith('color')) continue;
                         const index = Number.parseInt(cls.substr(5));
-                        const color = this._colors[index];
+                        const color = this.colorToString(this._colors[index]);
                         element.setAttribute('fill', color);
                         (element as SVGElement).style.fill = color;
                     }
