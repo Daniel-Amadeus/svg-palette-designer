@@ -7,7 +7,7 @@ export class SvgPaletteDesigner {
 
     protected _fileName: string = 'file.svg';
 
-    protected _colorCount = 3;
+    protected _colorCount = 5;
     protected _colors: number[][] = [];
     protected _selectedColor = 0;
 
